@@ -56,6 +56,20 @@ fun MainScreen(viewModel: TvSeriesViewModel, navController: NavController) {
     val context = LocalContext.current
     val gridState = rememberLazyGridState()
 
+    var searchQuery by remember { mutableStateOf("") }
+    var sortOption by remember { mutableStateOf("Name A-Z") }
+
+    val filteredAndSortedSeries = remember(series, searchQuery, sortOption) {
+        series.filter {
+            it.name.contains(searchQuery, ignoreCase = true)
+        }.sortedWith(
+            when (sortOption) {
+                "Rating" -> compareByDescending { it.vote_average }
+                else -> compareBy { it.name }
+            }
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -65,10 +79,15 @@ fun MainScreen(viewModel: TvSeriesViewModel, navController: NavController) {
         AppBar()
 
         Spacer(modifier = Modifier.height(8.dp))
-        SearchAndSortBar()
+        SearchAndSortBar(
+            searchQuery = searchQuery,
+            onSearchQueryChange = { searchQuery = it },
+            sortOption = sortOption,
+            onSortOptionChange = { sortOption = it }
+        )
         Spacer(modifier = Modifier.height(8.dp))
         TvSeriesGrid(
-            series = series,
+            series = filteredAndSortedSeries,
             gridState = gridState,
             loadState = loadState,
             loadMore = {
@@ -83,6 +102,7 @@ fun MainScreen(viewModel: TvSeriesViewModel, navController: NavController) {
         Spacer(modifier = Modifier.weight(1f))
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -126,35 +146,37 @@ fun AppBar() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchAndSortBar() {
-    var searchQuery by remember { mutableStateOf("") }
-
-    // Define a common height for both search bar and sort icon
-    val commonHeight = 56.dp
+fun SearchAndSortBar(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    sortOption: String,
+    onSortOptionChange: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val sortOptions = listOf("Name A-Z", "Rating")
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 0.dp, start = 8.dp, end = 8.dp, bottom = 10.dp),
+            .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         OutlinedTextField(
             value = searchQuery,
-            onValueChange = { searchQuery = it },
+            onValueChange = onSearchQueryChange,
             label = { Text("Search.. (Made With ❤\uFE0FSrinath)", color = Color.White, fontSize = 12.sp) },
             leadingIcon = {
                 Icon(
-                    imageVector = Icons.Default.Search, // Use the built-in search icon
-                    contentDescription = "Search.. (Made With ❤️Srinath)",
-                    tint = Color.White,
-                    modifier = Modifier.size(24.dp) // Adjust size as needed
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search",
+                    tint = Color.White
                 )
             },
             modifier = Modifier
                 .weight(1f)
                 .padding(end = 8.dp)
-                .height(commonHeight), // Set the height for the search box
-            shape = RoundedCornerShape(12.dp), // Add rounded corners
+                .height(56.dp),
+            shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 focusedBorderColor = Color.White,
                 unfocusedBorderColor = Color.Gray,
@@ -164,21 +186,40 @@ fun SearchAndSortBar() {
                 unfocusedLabelColor = Color.Gray
             )
         )
-        IconButton(
-            onClick = { /* Handle sort click */ },
-            modifier = Modifier.height(commonHeight) // Set the same height for the sort icon
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.baseline_sort_24), // Use the drawable resource
-                contentDescription = "Sort",
-                modifier = Modifier
-                    .size(24.dp)
-                    .align(Alignment.CenterVertically), // Adjust size as needed
-                colorFilter = ColorFilter.tint(Color.White) // Apply tint color
-            )
+
+        Box {
+            IconButton(
+                onClick = { expanded = true },
+                modifier = Modifier.height(56.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = "Sort",
+                    tint = Color.White
+                )
+            }
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.background(Color.DarkGray)
+            ) {
+                sortOptions.forEach { option ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(text = option, color = Color.White)
+                        },
+                        onClick = {
+                            onSortOptionChange(option)
+                            expanded = false
+                        }
+                    )
+                }
+            }
         }
     }
 }
+
 
 @Composable
 fun AnimatedLoadingIndicator() {
