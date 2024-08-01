@@ -2,6 +2,13 @@ package com.srinath.populartvseries.screens
 
 import android.content.Intent
 import android.util.Log
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.animateValue
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,6 +36,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -38,19 +46,21 @@ import coil.request.ImageRequest
 import com.srinath.populartvseries.R
 import com.srinath.populartvseries.activities.DetailActivity
 import com.srinath.populartvseries.models.TvSeries
+import com.srinath.populartvseries.viewModel.LoadState
 import com.srinath.populartvseries.viewModel.TvSeriesViewModel
 
 @Composable
 fun MainScreen(viewModel: TvSeriesViewModel, navController: NavController) {
     val series by viewModel.uiState.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
+    val loadState by viewModel.loadState.collectAsState()
     val context = LocalContext.current
     val gridState = rememberLazyGridState()
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .background(color = Color.Black)
-        .padding(top = 20.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color.Black)
+            .padding(top = 20.dp)
     ) {
         AppBar()
 
@@ -60,7 +70,7 @@ fun MainScreen(viewModel: TvSeriesViewModel, navController: NavController) {
         TvSeriesGrid(
             series = series,
             gridState = gridState,
-            isLoading = isLoading,
+            loadState = loadState,
             loadMore = {
                 viewModel.loadNextPage()
             }
@@ -71,7 +81,6 @@ fun MainScreen(viewModel: TvSeriesViewModel, navController: NavController) {
             context.startActivity(intent)
         }
         Spacer(modifier = Modifier.weight(1f))
-
     }
 }
 
@@ -100,7 +109,7 @@ fun AppBar() {
         Box(
             modifier = Modifier
                 .height(40.dp)
-                .weight(Float.MAX_VALUE)
+                .weight(1f)
                 .fillMaxHeight(), // Ensure the Box takes up the remaining height
             contentAlignment = Alignment.Center // Center-align content within the Box
         ) {
@@ -132,7 +141,7 @@ fun SearchAndSortBar() {
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            label = { Text("Search.. (Made With ❤\uFE0FSrinath)", color = Color.White) },
+            label = { Text("Search.. (Made With ❤\uFE0FSrinath)", color = Color.White, fontSize = 12.sp) },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search, // Use the built-in search icon
@@ -162,17 +171,59 @@ fun SearchAndSortBar() {
             Image(
                 painter = painterResource(id = R.drawable.baseline_sort_24), // Use the drawable resource
                 contentDescription = "Sort",
-                modifier = Modifier.size(24.dp).align(Alignment.CenterVertically), // Adjust size as needed
+                modifier = Modifier
+                    .size(24.dp)
+                    .align(Alignment.CenterVertically), // Adjust size as needed
                 colorFilter = ColorFilter.tint(Color.White) // Apply tint color
             )
         }
     }
 }
+
+@Composable
+fun AnimatedLoadingIndicator() {
+    val infiniteTransition = rememberInfiniteTransition()
+    val size by infiniteTransition.animateValue(
+        initialValue = 24.dp,
+        targetValue = 36.dp,
+        typeConverter = Dp.VectorConverter,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            CircularProgressIndicator(
+                color = Color.Red,
+                modifier = Modifier.size(size) // Dynamic size based on animation
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Loading more series for you...",
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
+    }
+}
+
 @Composable
 fun TvSeriesGrid(
     series: List<TvSeries>,
     gridState: LazyGridState,
-    isLoading: Boolean,
+    loadState: LoadState,
     loadMore: () -> Unit,
     onItemClick: (TvSeries) -> Unit
 ) {
@@ -184,36 +235,56 @@ fun TvSeriesGrid(
         ) {
             items(series.size) { index ->
                 TvSeriesItem(tvSeries = series[index], onClick = { onItemClick(series[index]) })
-            }
 
-            item {
-                if (isLoading) {
-                    Spacer(modifier = Modifier.height(16.dp)) // Add space to prevent overlap with loading indicator
-                }
-            }
-        }
-
-        if (isLoading) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = Color.Red)
-            }
-        }
-    }
-
-    LaunchedEffect(gridState) {
-        snapshotFlow { gridState.layoutInfo.visibleItemsInfo.lastOrNull() }
-            .collect { lastVisibleItem ->
-                lastVisibleItem?.let {
-                    if (lastVisibleItem.index >= series.size - 1 && !isLoading) {
+                // Trigger loadMore when the last item is visible
+                if (index == series.lastIndex && loadState != LoadState.Loading) {
+                    LaunchedEffect(Unit) {
                         loadMore()
                     }
                 }
             }
+
+            item {
+                when (loadState) {
+                    is LoadState.Loading -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+
+                            if(series.isNotEmpty()){
+                               AnimatedLoadingIndicator()
+                            }
+                        }
+                    }
+                    is LoadState.Error -> {
+                        Text(
+                            text = "Error: ${loadState.exception.localizedMessage}",
+                            color = Color.Red,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                    else -> {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
+            }
+        }
+
+        if (loadState is LoadState.Loading) {
+           if(series.isEmpty()){
+               Box(
+                   modifier = Modifier
+                       .align(Alignment.Center)
+                       .padding(16.dp),
+                   contentAlignment = Alignment.Center
+               ) {
+                   AnimatedLoadingIndicator()
+               }
+           }
+        }
     }
 }
 

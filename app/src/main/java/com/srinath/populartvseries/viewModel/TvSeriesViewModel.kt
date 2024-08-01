@@ -13,33 +13,43 @@ class TvSeriesViewModel(private val repository: TvSeriesRepository) : ViewModel(
     private val _uiState = MutableStateFlow<List<TvSeries>>(emptyList())
     val uiState: StateFlow<List<TvSeries>> = _uiState.asStateFlow()
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    private val _loadState = MutableStateFlow<LoadState>(LoadState.Idle)
+    val loadState: StateFlow<LoadState> = _loadState.asStateFlow()
 
     private var currentPage = 1
+    private var isLastPage = false
 
     init {
         loadNextPage() // Load the first page initially
     }
 
     fun loadNextPage() {
-        if (_isLoading.value) return
+        if (_loadState.value is LoadState.Loading || isLastPage) return
 
-        _isLoading.value = true
+        _loadState.value = LoadState.Loading
         viewModelScope.launch {
             try {
                 repository.refreshSeries(currentPage) // Refresh the series data for the current page
-
-                // Collect the series from the repository and update UI state
                 repository.getPopularSeries().collect { newSeries ->
-                    _uiState.value = _uiState.value + newSeries
-                    currentPage++
-                    _isLoading.value = false
+                    if (newSeries.isEmpty()) {
+                        isLastPage = true
+                    } else {
+                        _uiState.value = _uiState.value + newSeries
+                        currentPage++
+                    }
+                    _loadState.value = LoadState.Idle
                 }
             } catch (e: Exception) {
                 e.printStackTrace() // Handle the error appropriately
-                _isLoading.value = false
+                _loadState.value = LoadState.Error(e)
             }
         }
     }
 }
+
+sealed class LoadState {
+    object Idle : LoadState()
+    object Loading : LoadState()
+    data class Error(val exception: Throwable) : LoadState()
+}
+
