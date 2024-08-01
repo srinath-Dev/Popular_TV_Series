@@ -25,6 +25,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".activities.DetailActivity"
+            android:exported="true"
+            android:label="DetailActivity"
+            android:theme="@style/Theme.PopularTVSeries">
+        </activity>
     </application>
 
 </manifest>

@@ -74,28 +74,7 @@ fun TvSeriesApp(viewModel: TvSeriesViewModel) {
 }
 
 
-class DetailActivity : ComponentActivity() {
-    private lateinit var viewModel: TvSeriesViewModel
 
-    @SuppressLint("StateFlowValueCalledInComposition")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val seriesId = intent.getIntExtra("SERIES_ID", 0)
-        val database = DatabaseModule.getDatabase(this)
-        val repository = TvSeriesRepository(NetworkModule.tvSeriesApi, database.tvSeriesDao())
-        val factory = TvSeriesViewModelFactory(repository)
-        viewModel = ViewModelProvider(this, factory).get(TvSeriesViewModel::class.java)
-
-        setContent {
-            val series = viewModel.uiState.value.find { it.id == seriesId }
-            series?.let {
-                MaterialTheme {
-                    DetailScreen(tvSeries = it)
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun DetailScreen(tvSeries: TvSeries) {

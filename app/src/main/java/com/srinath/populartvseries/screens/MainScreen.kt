@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.srinath.populartvseries.DetailActivity
+import com.srinath.populartvseries.activities.DetailActivity
 import com.srinath.populartvseries.models.TvSeries
 import com.srinath.populartvseries.viewModel.TvSeriesViewModel
 
