@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -31,6 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.srinath.populartvseries.R
@@ -130,11 +132,11 @@ fun SearchAndSortBar() {
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            label = { Text("Search", color = Color.White) },
+            label = { Text("Search.. (Made With ❤\uFE0FSrinath)", color = Color.White) },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search, // Use the built-in search icon
-                    contentDescription = "Search",
+                    contentDescription = "Search.. (Made With ❤️Srinath)",
                     tint = Color.White,
                     modifier = Modifier.size(24.dp) // Adjust size as needed
                 )
@@ -226,18 +228,9 @@ fun TvSeriesItem(tvSeries: TvSeries, onClick: () -> Unit) {
         val imageUrl = "https://image.tmdb.org/t/p/w500${tvSeries.poster_path}"
         Log.d("TvSeriesItem", "Loading image from URL: $imageUrl")
 
-        Image(
-            painter = rememberAsyncImagePainter(
-                ImageRequest.Builder(LocalContext.current)
-                    .data(imageUrl)
-                    .crossfade(true)
-                    .build()
-            ),
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(150.dp)
-        )
+        // Use the LoadableImage composable
+        LoadableImage(imageUrl = imageUrl)
+
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = tvSeries.name,
@@ -273,5 +266,41 @@ fun TvSeriesItem(tvSeries: TvSeries, onClick: () -> Unit) {
             fontSize = 12.sp,
             modifier = Modifier.fillMaxWidth()
         )
+    }
+}
+
+@Composable
+fun LoadableImage(imageUrl: String) {
+    val painter = rememberAsyncImagePainter(
+        ImageRequest.Builder(LocalContext.current)
+            .data(imageUrl)
+            .crossfade(true)
+            .build()
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(150.dp)
+            .background(Color.Gray) // Background color for the image area
+    ) {
+        Image(
+            painter = painter,
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(150.dp),
+            contentScale = ContentScale.Crop // Adjust content scale as needed
+        )
+        if (painter.state is AsyncImagePainter.State.Loading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Color.White)
+            }
+        }
     }
 }
