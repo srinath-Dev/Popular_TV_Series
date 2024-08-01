@@ -3,11 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Popular TV Series App</title>
+
 </head>
 <body>
 
 <h1>Popular TV Series App</h1>
+
+
+<table>
+  <tr>
+    <td>Home Screen With Pagination</td>
+     <td>Series Detail</td>
+     <td>Search</td>
+    <td>Sort</td>
+  </tr>
+  <tr>
+<td><img src="https://github.com/user-attachments/assets/49dd6c6f-4c1d-4d8c-937c-c3b38c4b03c9" width="200" /> </td>
+<td><img src="https://github.com/user-attachments/assets/1eef03c8-b31d-4630-bf73-60c9fb28f789" width="200" /></td>
+<td><img src="https://github.com/user-attachments/assets/52ae40b3-0ddf-4df9-93f9-f00bfd662a26" width="200" /></td>
+<td><img src="https://github.com/user-attachments/assets/a0966346-7140-4125-bf9f-3430a611de61" width="200" /></td>
+
+ </tr>
+ 
+ </table>
 
 <p>A Kotlin-based Android app that showcases popular TV series using a clean architecture pattern. The app features an infinite scrolling grid of TV series, detailed information about each series, and functionality for pagination and error handling.</p>
 
