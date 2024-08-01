@@ -94,9 +94,8 @@ fun MainScreen(viewModel: TvSeriesViewModel, navController: NavController) {
                 viewModel.loadNextPage()
             }
         ) { selectedSeries ->
-            val intent = Intent(context, DetailActivity::class.java).apply {
-                putExtra("SERIES_ID", selectedSeries.id)
-            }
+            val intent = Intent(context, DetailActivity::class.java)
+            intent.putExtra("TV_SERIES", selectedSeries) // `tvSeries` is your TvSeries object
             context.startActivity(intent)
         }
         Spacer(modifier = Modifier.weight(1f))

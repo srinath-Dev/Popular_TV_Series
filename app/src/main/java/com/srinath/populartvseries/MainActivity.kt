@@ -28,6 +28,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
+import com.srinath.populartvseries.activities.DetailScreen
 import com.srinath.populartvseries.api.NetworkModule
 import com.srinath.populartvseries.db.DatabaseModule
 import com.srinath.populartvseries.models.TvSeries
@@ -72,36 +73,6 @@ fun TvSeriesApp(viewModel: TvSeriesViewModel) {
             series?.let { DetailScreen(tvSeries = it) }
         }
     }
-}
-
-
-
-
-@Composable
-fun DetailScreen(tvSeries: TvSeries) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Image(
-            painter = rememberAsyncImagePainter(
-                model = "https://image.tmdb.org/t/p/w500${tvSeries.poster_path}"
-            ),
-            contentDescription = null,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(tvSeries.name, style = MaterialTheme.typography.displaySmall)
-        Text(
-            "Rating: ${tvSeries.vote_average} (${tvSeries.vote_count} votes)",
-            style = MaterialTheme.typography.bodyMedium
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(tvSeries.overview, style = MaterialTheme.typography.bodyLarge)
-    }
-
-
 }
 
 

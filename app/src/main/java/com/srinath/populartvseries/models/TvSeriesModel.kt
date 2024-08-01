@@ -2,6 +2,8 @@ package com.srinath.populartvseries.models
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.io.Serializable
+
 
 data class TvSeries(
     val id: Int,
@@ -12,7 +14,7 @@ data class TvSeries(
     val first_air_date: String?,
     val vote_average: Double,
     val vote_count: Int
-)
+):Serializable
 
 @Entity(tableName = "series")
 data class TvSeriesEntity(
