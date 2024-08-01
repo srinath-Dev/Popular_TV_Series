@@ -8,10 +8,10 @@ data class TvSeries(
     val name: String,
     val overview: String,
     val popularity: Double,
-    val posterPath: String?,
-    val firstAirDate: String?,
-    val voteAverage: Double,
-    val voteCount: Int
+    val poster_path: String?,
+    val first_air_date: String?,
+    val vote_average: Double,
+    val vote_count: Int
 )
 
 @Entity(tableName = "series")
@@ -31,10 +31,10 @@ fun TvSeries.toEntity(): TvSeriesEntity = TvSeriesEntity(
     name = name,
     overview = overview,
     popularity = popularity,
-    posterPath = posterPath,
-    firstAirDate = firstAirDate,
-    voteAverage = voteAverage,
-    voteCount = voteCount
+    posterPath = poster_path,
+    firstAirDate = first_air_date,
+    voteAverage = vote_average,
+    voteCount = vote_count
 )
 
 fun TvSeriesEntity.toDomain(): TvSeries = TvSeries(
@@ -42,8 +42,8 @@ fun TvSeriesEntity.toDomain(): TvSeries = TvSeries(
     name = name,
     overview = overview,
     popularity = popularity,
-    posterPath = posterPath,
-    firstAirDate = firstAirDate,
-    voteAverage = voteAverage,
-    voteCount = voteCount
+    poster_path = posterPath,
+    first_air_date = firstAirDate,
+    vote_average = voteAverage,
+    vote_count = voteCount
 )

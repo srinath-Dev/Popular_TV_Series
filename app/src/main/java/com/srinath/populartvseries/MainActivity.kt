@@ -26,6 +26,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
 import com.srinath.populartvseries.api.NetworkModule
 import com.srinath.populartvseries.db.DatabaseModule
@@ -84,8 +85,8 @@ fun DetailScreen(tvSeries: TvSeries) {
             .padding(16.dp)
     ) {
         Image(
-            painter = rememberImagePainter(
-                data = "https://image.tmdb.org/t/p/w500${tvSeries.posterPath}"
+            painter = rememberAsyncImagePainter(
+                model = "https://image.tmdb.org/t/p/w500${tvSeries.poster_path}"
             ),
             contentDescription = null,
             modifier = Modifier.fillMaxWidth()
@@ -93,7 +94,7 @@ fun DetailScreen(tvSeries: TvSeries) {
         Spacer(modifier = Modifier.height(16.dp))
         Text(tvSeries.name, style = MaterialTheme.typography.displaySmall)
         Text(
-            "Rating: ${tvSeries.voteAverage} (${tvSeries.voteCount} votes)",
+            "Rating: ${tvSeries.vote_average} (${tvSeries.vote_count} votes)",
             style = MaterialTheme.typography.bodyMedium
         )
         Spacer(modifier = Modifier.height(8.dp))
