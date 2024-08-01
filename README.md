@@ -41,11 +41,9 @@
 <ul>
     <li><strong>Jetpack Compose</strong>: For building the UI with a declarative approach.</li>
     <li><strong>Coil</strong>: For image loading and caching.</li>
-    <li><strong>Kotlin Coroutines</strong>: For managing asynchronous operations.</li>
     <li><strong>Flow</strong>: For handling reactive data streams.</li>
     <li><strong>Room</strong>: For local database storage of TV series data.</li>
     <li><strong>Retrofit</strong>: For network operations and API interactions.</li>
-    <li><strong>Hilt</strong>: For dependency injection.</li>
 </ul>
 
 <h2>Architecture</h2>
